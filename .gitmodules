@@ -1,0 +1,6 @@
+[submodule "app/external/rab_common"]
+	path = app/external/rab_common
+	url = https://github.com/senjianlu/rab_common.git
+[submodule "app/external/rab_fastapi_auth"]
+	path = app/external/rab_fastapi_auth
+	url = https://github.com/senjianlu/rab_fastapi_auth.git
