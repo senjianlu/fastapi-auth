@@ -132,7 +132,7 @@ dmypy.json
 ~$*
 
 # 各种环境下的配置
-config/*
+config/*.toml
 
 # 日志
-logs/*
+logs/*.log
