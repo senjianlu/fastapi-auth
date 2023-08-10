@@ -45,36 +45,40 @@ async def handle_response_style(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
-    # 2. 修改响应格式为 And Deisgn Pro 官方建议风格
+    # 2. 过滤非 JSON 格式的响应
+    if "application/json" not in response.headers["content-type"]:
+        return response
+    # 3. 修改响应格式为 And Deisgn Pro 官方建议风格
     # https://pro.ant.design/zh-CN/docs/request#参考后端接口规范建议
     response_body = b""
     async for chunk in response.body_iterator:
         response_body += chunk
-    # 2.1 解码响应体
+    # 3.1 解码响应体
     decoded_response_body = json.loads(response_body.decode("utf-8"))
-    # 2.2 补齐需要用到的字段
+    # 3.2 补齐需要用到的字段
     if "code" not in decoded_response_body:
-        decoded_response_body["code"] = 404
+        decoded_response_body["code"] = 999
     if "msg" not in decoded_response_body:
         decoded_response_body["msg"] = ""
     if "data" not in decoded_response_body:
         decoded_response_body["data"] = {}
     new_decoded_response_body = copy.deepcopy(decoded_response_body)
-    # 2.3 正常响应
+    # 3.3 正常响应
     if response.status_code == 200:
         del new_decoded_response_body["code"]
         del new_decoded_response_body["msg"]
         del new_decoded_response_body["data"]
         new_decoded_response_body = {"success": True, "data": decoded_response_body["data"], "code": decoded_response_body["code"], "message": decoded_response_body["msg"], **new_decoded_response_body}
-    # 2.4 失败响应
+    # 3.4 失败响应
     else:
-        new_decoded_response_body = {"success": False, "data": decoded_response_body["data"], "errorCode": decoded_response_body["code"], "errorMessage": decoded_response_body["msg"]}
-    # 2.5 重新编码响应体
+        del new_decoded_response_body["detail"]
+        new_decoded_response_body = {"success": False, "data": decoded_response_body["data"], "errorCode": decoded_response_body["code"], "errorMessage": decoded_response_body["detail"]}
+    # 3.5 重新编码响应体
     # print("FastAPI - 请求响应：", new_decoded_response_body)
     new_response_body = json.dumps(new_decoded_response_body, ensure_ascii=False).encode("utf-8")
-    # 3. 修改响应头中的 Content-Length
+    # 4. 修改响应头中的 Content-Length
     response.headers["Content-Length"] = str(len(new_response_body))
-    # 4. 返回新的响应
+    # 5. 返回新的响应
     return Response(
         content=new_response_body,
         status_code=response.status_code,
