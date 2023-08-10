@@ -1,0 +1,57 @@
+# 运行模式
+[mode]
+# 是否为调试模式
+debug = true
+
+# 外部模块
+[external]
+  [external.rab_common]
+    [external.rab_common.config]
+    # 环境: dev/test/pre/prod
+    env = "dev"
+    [external.rab_common.logger]
+    # 日志级别
+    level = "info"
+    # 日志输出路径
+    dir_path = "../logs"
+    [external.rab_common.orm]
+      [external.rab_common.orm.user]
+      id = "test_id"
+      name = "test_name"
+      [external.rab_common.orm.database]
+      # 暂时只支持 PostgreSQL 数据库
+      host = "127.0.0.1"
+      port = 5432
+      username = "postgres"
+      password = "postgres"
+      database = "postgres"
+    [external.rab_common.redis]
+    host = "127.0.0.1"
+    port = 6379
+    password = "my_redis_password"
+    database = 1
+    
+  [external.rab_fastapi_auth]
+    [external.rab_fastapi_auth.style]
+    # 风格: default/antd
+    response = "antd"
+    [external.rab_fastapi_auth.token]
+    # Secret Key，生成方式: openssl rand -hex 32
+    secret_key = "my_secret_key"
+    # Token 过期时间，单位: 秒
+    access_token_expire_seconds = 3600
+    # 计算 Token 时使用的算法
+    algorithm = "HS256"
+    [external.rab_fastapi_auth.router]
+    # 路由前缀
+    prefix = "/auth"
+    # Token 认证路由
+    token = "auth/login"
+    [external.rab_fastapi_auth.user]
+    # 表名
+    table_name = "fastapi_auth_user"
+      [external.rab_fastapi_auth.user.admin]
+      # 管理员用户名
+      username = "admin"
+      # 管理员密码
+      password = "admin"

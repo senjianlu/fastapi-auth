@@ -1,0 +1,17 @@
+# Rab Common 包用
+toml==0.10.2
+# FastAPI 相关
+fastapi==0.100.0
+uvicorn==0.23.1
+# FastAPI 登录验证
+pydantic==2.1.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+aioredis==2.0.1
+python-multipart==0.0.6
+PyJWT==2.8.0
+# ORM
+SQLAlchemy==2.0.11
+psycopg2==2.9.6 # https://www.cnblogs.com/daofaziran/p/12604879.html
+# 配置文件
+toml==0.10.2
