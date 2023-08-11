@@ -63,17 +63,40 @@ async def handle_response_style(request: Request, call_next):
     if "data" not in decoded_response_body:
         decoded_response_body["data"] = {}
     new_decoded_response_body = copy.deepcopy(decoded_response_body)
-    # 3.3 正常响应
+    # 3.3 修改 data 内容，将 key 从下划线转换为小驼峰，可能有多层
+    new_data = decoded_response_body["data"]
+    def convert_to_camel_case(data):
+        if isinstance(data, dict):
+            for key in list(data.keys()):
+                if "_" in key:
+                    # 将 key 从下划线转换为小驼峰
+                    new_key = ""
+                    for index, item in enumerate(key.split("_")):
+                        if index == 0:
+                            new_key += item
+                        else:
+                            new_key += item.capitalize()
+                    data[new_key] = data.pop(key)
+                    convert_to_camel_case(data[new_key])
+                else:
+                    convert_to_camel_case(data[key])
+        elif isinstance(data, list):
+            for item in data:
+                convert_to_camel_case(item)
+        else:
+            pass
+    convert_to_camel_case(new_data)
+    # 3.4 正常响应
     if response.status_code == 200:
         del new_decoded_response_body["code"]
         del new_decoded_response_body["msg"]
         del new_decoded_response_body["data"]
-        new_decoded_response_body = {"success": True, "data": decoded_response_body["data"], "code": decoded_response_body["code"], "message": decoded_response_body["msg"], **new_decoded_response_body}
-    # 3.4 失败响应
+        new_decoded_response_body = {"success": True, "data": new_data, "code": decoded_response_body["code"], "message": decoded_response_body["msg"], **new_decoded_response_body}
+    # 3.5 失败响应
     else:
         del new_decoded_response_body["detail"]
-        new_decoded_response_body = {"success": False, "data": decoded_response_body["data"], "errorCode": decoded_response_body["code"], "errorMessage": decoded_response_body["detail"]}
-    # 3.5 重新编码响应体
+        new_decoded_response_body = {"success": False, "data": new_data, "errorCode": decoded_response_body["code"], "errorMessage": decoded_response_body["detail"]}
+    # 3.6 重新编码响应体
     # print("FastAPI - 请求响应：", new_decoded_response_body)
     new_response_body = json.dumps(new_decoded_response_body, ensure_ascii=False).encode("utf-8")
     # 4. 修改响应头中的 Content-Length
